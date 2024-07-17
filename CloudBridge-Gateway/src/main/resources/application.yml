@@ -1,0 +1,42 @@
+server:
+  port: 8090
+spring:
+  application:
+    name: CloudBridge-Gateway
+  cloud:
+    gateway:
+      routes:
+        - id: api_route
+          uri: http://localhost:8123
+          predicates:
+            - Path=/api/**
+#        - id: path_route
+#          uri: http://localhost:8123
+#          predicates:
+#            - Path=/api/**
+#          filters:
+#            - AddRequestHeader=zs, swag
+#            - AddRequestParameter=name, cat
+#            - name: CircuitBreaker
+#              args:
+#                name: CircuitBreaker
+#                fallbackUri: forward:/callback
+#        - id: callback
+#          uri: http://www.baidu.com
+#          predicates:
+#            - Path=/api/**
+dubbo:
+  application:
+    name: CloudBridge-Gateway
+    logger: slf4j
+    qos-port: 33333
+  registry:
+    address: nacos://${nacos.address:127.0.0.1}:8848
+    parameters.register-consumer-url: true
+
+logging:
+  level:
+    org:
+      springframework:
+        cloud:
+          gateway: debug

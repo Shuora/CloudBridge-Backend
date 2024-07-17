@@ -1,0 +1,12 @@
+server:
+  port: 8123
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: CloudBridge-Interface
+cloudbridge:
+  client:
+    access-key: zs
+    secret-key: 123456
