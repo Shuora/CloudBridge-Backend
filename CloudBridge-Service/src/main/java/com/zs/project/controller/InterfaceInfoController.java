@@ -1,6 +1,8 @@
 package com.zs.project.controller;
 
 import com.alibaba.cloud.commons.lang.StringUtils;
+import com.alibaba.csp.sentinel.annotation.SentinelResource;
+import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.nacos.shaded.com.google.gson.Gson;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zs.project.annotation.AuthCheck;
@@ -16,6 +18,7 @@ import com.zs.project.domain.entity.User;
 import com.zs.project.domain.enums.InterfaceInfoStatusEnum;
 import com.zs.project.domain.vo.InterfaceInfoVO;
 import com.zs.project.exception.BusinessException;
+import com.zs.project.exception.SentinelHandler;
 import com.zs.project.exception.ThrowUtils;
 import com.zs.project.service.InterfaceInfoService;
 import com.zs.project.service.UserService;
@@ -247,6 +250,7 @@ public class InterfaceInfoController {
 
 
     @PostMapping("invoke")
+    @SentinelResource(value = "invokeInterfaceInfo", blockHandler = "doActionBlockHandler", blockHandlerClass = SentinelHandler.class, fallback = "doActionFallback", fallbackClass = SentinelHandler.class)
     public BaseResponse<Object> invokeInterfaceInfo(@RequestBody InterfaceInfoInvokeRequest interfaceInfoInvokeRequest, HttpServletRequest request) {
         if (interfaceInfoInvokeRequest == null || interfaceInfoInvokeRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -274,8 +278,5 @@ public class InterfaceInfoController {
         return ResultUtils.success(result);
     }
 
-    @GetMapping("/test")
-    public String getTest(String name) {
-        return "GET Success" + name;
-    }
+
 }

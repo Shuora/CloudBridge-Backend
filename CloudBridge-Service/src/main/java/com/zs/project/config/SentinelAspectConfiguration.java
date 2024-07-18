@@ -1,0 +1,19 @@
+package com.zs.project.config;
+
+import com.alibaba.csp.sentinel.annotation.aspectj.SentinelResourceAspect;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+/**
+ * @author ZhuangShuo
+ * @date 2024/7/18
+ * @description
+ */
+@Configuration
+public class SentinelAspectConfiguration {
+
+    @Bean
+    public SentinelResourceAspect sentinelResourceAspect() {
+        return new SentinelResourceAspect();
+    }
+}
