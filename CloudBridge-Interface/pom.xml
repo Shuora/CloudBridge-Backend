@@ -8,7 +8,7 @@
         <artifactId>CloudBridge-Backend</artifactId>
         <version>0.0.1</version>
     </parent>
-    <groupId>com.zs.project</groupId>
+    <groupId>com.cb.project</groupId>
     <artifactId>CloudBridge-Interface</artifactId>
     <version>0.0.1</version>
     <properties>
@@ -26,7 +26,7 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.zs.project</groupId>
+            <groupId>com.cb.project</groupId>
             <artifactId>CloudBridge-Client-SDK</artifactId>
             <version>0.0.1</version>
         </dependency>

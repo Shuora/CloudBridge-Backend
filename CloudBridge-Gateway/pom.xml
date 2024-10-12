@@ -59,7 +59,7 @@
             <version>${mysql.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.zs.project</groupId>
+            <groupId>com.cb.project</groupId>
             <artifactId>CloudBridge-Client-SDK</artifactId>
             <version>0.0.1</version>
             <exclusions>

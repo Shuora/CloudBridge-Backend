@@ -1,4 +1,4 @@
-package com.zs.project.domain;
+package com.cb.project.domain;
 
 import lombok.Data;
 

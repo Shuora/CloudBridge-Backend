@@ -1,2 +1,2 @@
 # spring boot starter
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.zs.project.CloudBridgeClientConfig
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.cb.project.CloudBridgeClientConfig

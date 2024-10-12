@@ -1,30 +1,30 @@
-package com.zs.project.client;
+package com.cb.project.client;
 
-import cn.hutool.core.util.RandomUtil;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONUtil;
-import com.zs.project.domain.User;
-import com.zs.project.utils.SignUtils;
+import com.cb.project.domain.User;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.Map;
+
+import static com.cb.project.utils.GetHeaderMapUtils.getHeaderMap;
 
 /**
  * @author ZhuangShuo
  * @date 2024/7/8
  * @description 调用第三方接口的客户端
  */
-public class ZSAPIClient {
+public class APIClient {
 
-    public static final String GATEWAY_HOST = "http://localhost:8090";
+    private String GATEWAY_HOST;
     private String accessKey;
     private String secretKey;
 
-    public ZSAPIClient(String accessKey, String secretKey) {
+    public APIClient(String GATEWAY_HOST, String accessKey, String secretKey) {
+        this.GATEWAY_HOST = GATEWAY_HOST;
         this.accessKey = accessKey;
         this.secretKey = secretKey;
     }
@@ -51,27 +51,11 @@ public class ZSAPIClient {
     }
 
 
-    private Map<String, String> getHeaderMap(String body) {
-        Map<String, String> headerMap = new HashMap<>();
-        headerMap.put("accessKey", accessKey);
-        // 不能直接发送密码
-//        headerMap.put("secretKey", secretKey);
-        headerMap.put("nonce", RandomUtil.randomNumbers(5));
-        headerMap.put("body", body);
-        headerMap.put("timestamp", String.valueOf(System.currentTimeMillis()));
-        if (body == null) {
-            body = "";
-        }
-        headerMap.put("sign", SignUtils.getSign(body, secretKey));
-        return headerMap;
-    }
-
-
     public String getUsernameByPost(User user) {
         String json = JSONUtil.toJsonStr(user);
         HttpResponse response = HttpRequest.post(GATEWAY_HOST + "/api/name/user")
                 .charset(StandardCharsets.UTF_8)
-                .addHeaders(getHeaderMap(json))
+                .addHeaders(getHeaderMap(json, accessKey, secretKey))
                 .body(json)
                 .execute();
         System.out.println(response.getStatus());

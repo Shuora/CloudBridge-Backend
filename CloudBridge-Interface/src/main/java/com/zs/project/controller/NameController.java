@@ -1,6 +1,6 @@
 package com.zs.project.controller;
 
-import com.zs.project.domain.User;
+import com.cb.project.domain.User;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.*;
 

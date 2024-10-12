@@ -2,11 +2,10 @@ package com.zs.project.controller;
 
 import com.alibaba.cloud.commons.lang.StringUtils;
 import com.alibaba.csp.sentinel.annotation.SentinelResource;
-import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.nacos.shaded.com.google.gson.Gson;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.cb.project.client.APIClient;
 import com.zs.project.annotation.AuthCheck;
-import com.zs.project.client.ZSAPIClient;
 import com.zs.project.common.*;
 import com.zs.project.constant.UserConstant;
 import com.zs.project.domain.dto.interfaceinfo.InterfaceInfoAddRequest;
@@ -46,8 +45,11 @@ public class InterfaceInfoController {
     @Resource
     private UserService userService;
 
-    @Resource
-    private ZSAPIClient zsapiClient;
+
+    private String GATEWAY_HOST = "http://localhost:8090";
+
+    @Autowired
+    private APIClient APIClient;
 
     private final static Gson GSON = new Gson();
 
@@ -148,10 +150,10 @@ public class InterfaceInfoController {
         }
 
         // 初始化一个用户对象用于后续的身份验证
-        com.zs.project.domain.User user = new com.zs.project.domain.User();
+        com.cb.project.domain.User user = new com.cb.project.domain.User();
         user.setUserName("test");
         // 通过外部服务验证用户身份，并获取用户名
-        String username = zsapiClient.getUsernameByPost(user);
+        String username = APIClient.getUsernameByPost(user);
         // 如果用户名为空或不存在，则抛出业务异常
         if (StringUtils.isBlank(username)) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "接口验证失败！");
@@ -192,10 +194,10 @@ public class InterfaceInfoController {
         }
 
         // 初始化一个用户对象，用于后续调用验证接口
-        com.zs.project.domain.User user = new com.zs.project.domain.User();
+        com.cb.project.domain.User user = new com.cb.project.domain.User();
         user.setUserName("test");
         // 调用验证接口，获取用户名
-        String username = zsapiClient.getUsernameByPost(user);
+        String username = APIClient.getUsernameByPost(user);
         // 如果用户名为空，则抛出业务异常，表示系统错误
         if (StringUtils.isBlank(username)) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "接口验证失败！");
@@ -270,9 +272,9 @@ public class InterfaceInfoController {
         User user = userService.getLoginUser(request);
         String accessKey = user.getAccessKey();
         String secretKey = user.getSecretKey();
-        ZSAPIClient tempClient = new ZSAPIClient(accessKey, secretKey);
+        APIClient tempClient = new APIClient(GATEWAY_HOST, accessKey, secretKey);
         Gson gson = new Gson();
-        com.zs.project.domain.User userRequest = gson.fromJson(userRequestParams, com.zs.project.domain.User.class);
+        com.cb.project.domain.User userRequest = gson.fromJson(userRequestParams, com.cb.project.domain.User.class);
         String result = tempClient.getUsernameByPost(userRequest);
 
         return ResultUtils.success(result);

@@ -11,7 +11,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
  *
  * @author ZhuangShuo
  */
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = {"com.zs.project", "com.cb.project"})
 @MapperScan("com.zs.project.mapper")
 @EnableDiscoveryClient
 @EnableDubbo

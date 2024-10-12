@@ -83,6 +83,7 @@ mybatis-plus:
 
 cloudbridge:
   client:
+    GATEWAY_HOST: http://localhost:8090
     access-key: zs
     secret-key: 123456
 

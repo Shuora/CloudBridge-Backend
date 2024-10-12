@@ -1,6 +1,6 @@
-package com.zs.project;
+package com.cb.project;
 
-import com.zs.project.client.ZSAPIClient;
+import com.cb.project.client.APIClient;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -15,15 +15,16 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @ConfigurationProperties("cloudbridge.client")
 @Data
-@ComponentScan(basePackages = "com.zs.project")
+@ComponentScan
 public class CloudBridgeClientConfig {
 
+    private String GATEWAY_HOST;
     private String accessKey;
     private String secretKey;
 
     @Bean
-    public ZSAPIClient zsAPIClient() {
-        return new ZSAPIClient(accessKey, secretKey);
+    public APIClient zsAPIClient() {
+        return new APIClient(GATEWAY_HOST, accessKey, secretKey);
     }
 
 }
