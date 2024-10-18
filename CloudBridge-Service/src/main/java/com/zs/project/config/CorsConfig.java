@@ -8,7 +8,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  * 全局跨域配置
  *
  * @author ZhuangShuo
- * 
  */
 @Configuration
 public class CorsConfig implements WebMvcConfigurer {
@@ -21,6 +20,7 @@ public class CorsConfig implements WebMvcConfigurer {
                 .allowCredentials(true)
                 // 放行哪些域名（必须用 patterns，否则 * 会和 allowCredentials 冲突）
                 .allowedOriginPatterns("*")
+//                .allowedOrigins("http://localhost:8000")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .exposedHeaders("*");

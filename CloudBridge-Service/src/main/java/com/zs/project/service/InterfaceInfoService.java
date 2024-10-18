@@ -52,4 +52,6 @@ public interface InterfaceInfoService extends IService<InterfaceInfo> {
      */
     Page<InterfaceInfoVO> getInterfaceInfoVOPage(Page<InterfaceInfo> interfaceinfoPage, HttpServletRequest request);
 
+
+    Page<InterfaceInfoVO> getInterfaceInfoVOPageAndUser(Page<InterfaceInfo> interfaceinfoPage, HttpServletRequest request);
 }

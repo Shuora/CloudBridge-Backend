@@ -60,5 +60,6 @@ public class InterfaceInfoUpdateRequest implements Serializable {
      */
     private Integer isDelete;
 
+    private Long sdkId;
 
 }

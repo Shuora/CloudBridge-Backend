@@ -24,9 +24,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 用户接口
- *
  * @author ZhuangShuo
+ * @date 2024/7/5
+ * @description 用户
  */
 @RestController
 @RequestMapping("/user")

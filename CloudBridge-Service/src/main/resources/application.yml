@@ -41,6 +41,10 @@ spring:
       # 大小限制
       max-file-size: 10MB
   cloud:
+    loadbalancer:
+      timeout:
+        connect: 360000  # 连接超时，单位为毫秒
+        read: 360000    # 读取超时，单位为毫秒
     nacos:
       discovery:
         server-addr: localhost:8848 #配置Nacos地址
@@ -64,6 +68,8 @@ spring:
 server:
   address: 0.0.0.0
   port: 7529
+  tomcat:
+    connection-timeout: 360000  # 超时设置
   servlet:
     context-path: /api
     # cookie 30 天过期
@@ -114,3 +120,6 @@ knife4j:
   enable: true
   setting:
     language: zh_cn
+
+sdk:
+  path: D:\Data\SDK\

@@ -1,7 +1,5 @@
 package com.zs.project.domain.dto.interfaceinfo;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
 import com.zs.project.common.PageRequest;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -19,7 +17,6 @@ public class InterfaceInfoQueryRequest extends PageRequest implements Serializab
     /**
      * ID
      */
-    @TableId(type = IdType.AUTO)
     private Long id;
 
     /**
@@ -64,4 +61,9 @@ public class InterfaceInfoQueryRequest extends PageRequest implements Serializab
      * 创建人ID
      */
     private Long userId;
+
+    /**
+     * SDK ID
+     */
+    private Long sdkId;
 }

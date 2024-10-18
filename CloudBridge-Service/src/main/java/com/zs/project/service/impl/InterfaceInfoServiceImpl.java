@@ -10,8 +10,8 @@ import com.zs.project.domain.entity.InterfaceInfo;
 import com.zs.project.domain.vo.InterfaceInfoVO;
 import com.zs.project.exception.BusinessException;
 import com.zs.project.exception.ThrowUtils;
-import com.zs.project.service.InterfaceInfoService;
 import com.zs.project.mapper.InterfaceInfoMapper;
+import com.zs.project.service.InterfaceInfoService;
 import com.zs.project.utils.SqlUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.ObjectUtils;
@@ -90,6 +90,7 @@ public class InterfaceInfoServiceImpl extends ServiceImpl<InterfaceInfoMapper, I
         interfaceInfoVO.setIsDelete(interfaceinfo.getIsDelete());
         interfaceInfoVO.setCreateTime(interfaceinfo.getCreateTime());
         interfaceInfoVO.setUpdateTime(interfaceinfo.getUpdateTime());
+        interfaceInfoVO.setSdkId(interfaceinfo.getSdkId());
         return interfaceInfoVO;
     }
 
@@ -100,6 +101,24 @@ public class InterfaceInfoServiceImpl extends ServiceImpl<InterfaceInfoMapper, I
         // 将interfaceinfoList数据放入interfaceinfoVOPage
         interfaceinfoVOPage.setRecords(interfaceinfoList.stream().map((interfaceinfo) -> {
                     InterfaceInfoVO interfaceinfoVO = this.getInterfaceInfoVO(interfaceinfo, request);
+                    return interfaceinfoVO;
+                }
+        ).collect(Collectors.toList()));
+
+        if (CollectionUtils.isEmpty(interfaceinfoList)) {
+            return interfaceinfoVOPage;
+        }
+
+        return interfaceinfoVOPage;
+    }
+
+    @Override
+    public Page<InterfaceInfoVO> getInterfaceInfoVOPageAndUser(Page<InterfaceInfo> interfaceinfoPage, HttpServletRequest request) {
+        List<InterfaceInfo> interfaceinfoList = interfaceinfoPage.getRecords();
+        Page<InterfaceInfoVO> interfaceinfoVOPage = new Page<>(interfaceinfoPage.getCurrent(), interfaceinfoPage.getSize(), interfaceinfoPage.getTotal());
+        // 将interfaceinfoList数据放入interfaceinfoVOPage
+        interfaceinfoVOPage.setRecords(interfaceinfoList.stream().map((interfaceinfo) -> {
+            InterfaceInfoVO interfaceinfoVO = this.getInterfaceInfoVO(interfaceinfo, request);
                     return interfaceinfoVO;
                 }
         ).collect(Collectors.toList()));

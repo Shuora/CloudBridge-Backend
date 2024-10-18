@@ -1,13 +1,10 @@
 package com.zs.project.controller;
 
-import com.alibaba.cloud.commons.lang.StringUtils;
 import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import com.alibaba.nacos.shaded.com.google.gson.Gson;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cb.project.client.APIClient;
-import com.zs.project.annotation.AuthCheck;
 import com.zs.project.common.*;
-import com.zs.project.constant.UserConstant;
 import com.zs.project.domain.dto.interfaceinfo.InterfaceInfoAddRequest;
 import com.zs.project.domain.dto.interfaceinfo.InterfaceInfoInvokeRequest;
 import com.zs.project.domain.dto.interfaceinfo.InterfaceInfoQueryRequest;
@@ -32,7 +29,7 @@ import org.springframework.web.bind.annotation.*;
 /**
  * @author ZhuangShuo
  * @date 2024/7/5
- * @description
+ * @description 接口
  */
 @RestController
 @RequestMapping("/interfaceInfo")
@@ -109,7 +106,6 @@ public class InterfaceInfoController {
      * @return
      */
     @PostMapping("/update")
-    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Boolean> updateInterfaceInfo(@RequestBody InterfaceInfoUpdateRequest interfaceInfoUpdateRequest) {
         if (interfaceInfoUpdateRequest == null || interfaceInfoUpdateRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -135,7 +131,6 @@ public class InterfaceInfoController {
      * @return 返回一个包含操作结果的响应对象。
      */
     @PostMapping("/online")
-    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Boolean> onlineInterfaceInfo(@RequestBody IdRequest idRequest) {
         // 验证idRequest是否为空或ID值是否有效
         if (idRequest == null || idRequest.getId() <= 0) {
@@ -149,15 +144,15 @@ public class InterfaceInfoController {
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
         }
 
-        // 初始化一个用户对象用于后续的身份验证
-        com.cb.project.domain.User user = new com.cb.project.domain.User();
-        user.setUserName("test");
-        // 通过外部服务验证用户身份，并获取用户名
-        String username = APIClient.getUsernameByPost(user);
-        // 如果用户名为空或不存在，则抛出业务异常
-        if (StringUtils.isBlank(username)) {
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "接口验证失败！");
-        }
+//        // 初始化一个用户对象用于后续的身份验证
+//        com.cb.project.domain.User user = new com.cb.project.domain.User();
+//        user.setUserName("test");
+//        // 通过外部服务验证用户身份，并获取用户名
+//        String username = APIClient.getUsernameByPost(user);
+//        // 如果用户名为空或不存在，则抛出业务异常
+//        if (StringUtils.isBlank(username)) {
+//            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "接口验证失败！");
+//        }
 
         // 初始化一个新的接口信息对象，用于更新状态
         InterfaceInfo interfaceInfo = new InterfaceInfo();
@@ -178,7 +173,6 @@ public class InterfaceInfoController {
      * @throws BusinessException 如果请求参数无效或接口信息不存在，则抛出业务异常
      */
     @PostMapping("/offline")
-    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Boolean> offlineInterfaceInfo(@RequestBody IdRequest idRequest) {
         // 校验请求参数是否有效
         if (idRequest == null || idRequest.getId() <= 0) {
@@ -193,15 +187,15 @@ public class InterfaceInfoController {
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
         }
 
-        // 初始化一个用户对象，用于后续调用验证接口
-        com.cb.project.domain.User user = new com.cb.project.domain.User();
-        user.setUserName("test");
-        // 调用验证接口，获取用户名
-        String username = APIClient.getUsernameByPost(user);
-        // 如果用户名为空，则抛出业务异常，表示系统错误
-        if (StringUtils.isBlank(username)) {
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "接口验证失败！");
-        }
+//        // 初始化一个用户对象，用于后续调用验证接口
+//        com.cb.project.domain.User user = new com.cb.project.domain.User();
+//        user.setUserName("test");
+//        // 调用验证接口，获取用户名
+//        String username = APIClient.getUsernameByPost(user);
+//        // 如果用户名为空，则抛出业务异常，表示系统错误
+//        if (StringUtils.isBlank(username)) {
+//            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "接口验证失败！");
+//        }
 
         // 更新接口状态为下线
         InterfaceInfo interfaceInfo = new InterfaceInfo();
@@ -248,6 +242,28 @@ public class InterfaceInfoController {
         Page<InterfaceInfo> interfaceInfoPage = interfaceInfoService.page(new Page<>(current, size),
                 interfaceInfoService.getQueryWrapper(interfaceInfoQueryRequest));
         return ResultUtils.success(interfaceInfoService.getInterfaceInfoVOPage(interfaceInfoPage, request));
+    }
+
+    /**
+     * 分页获取列表（封装类）
+     *
+     * @param interfaceInfoQueryRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/list/pageByUserId/vo")
+    public BaseResponse<Page<InterfaceInfoVO>> listInterfaceInfoVOByPageAndUserId(@RequestBody InterfaceInfoQueryRequest interfaceInfoQueryRequest,
+                                                                                  HttpServletRequest request) {
+        User loginUser = userService.getLoginUser(request);
+        Long userId = loginUser.getId();
+        interfaceInfoQueryRequest.setUserId(userId);
+        long current = interfaceInfoQueryRequest.getCurrent();
+        long size = interfaceInfoQueryRequest.getPageSize();
+        // 限制爬虫
+        ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
+        Page<InterfaceInfo> interfaceInfoPage = interfaceInfoService.page(new Page<>(current, size),
+                interfaceInfoService.getQueryWrapper(interfaceInfoQueryRequest));
+        return ResultUtils.success(interfaceInfoService.getInterfaceInfoVOPageAndUser(interfaceInfoPage, request));
     }
 
 

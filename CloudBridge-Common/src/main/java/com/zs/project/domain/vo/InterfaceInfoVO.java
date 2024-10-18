@@ -74,4 +74,8 @@ public class InterfaceInfoVO {
      */
     private Date updateTime;
 
+    /**
+     * SDK ID
+     */
+    private Long sdkId;
 }
