@@ -1,5 +1,6 @@
 package com.zs.project.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -7,15 +8,18 @@ import com.zs.project.common.ErrorCode;
 import com.zs.project.constant.CommonConstant;
 import com.zs.project.domain.dto.interfaceinfo.InterfaceInfoQueryRequest;
 import com.zs.project.domain.entity.InterfaceInfo;
+import com.zs.project.domain.entity.UserInterfaceInfo;
 import com.zs.project.domain.vo.InterfaceInfoVO;
 import com.zs.project.exception.BusinessException;
 import com.zs.project.exception.ThrowUtils;
 import com.zs.project.mapper.InterfaceInfoMapper;
+import com.zs.project.mapper.UserInterfaceInfoMapper;
 import com.zs.project.service.InterfaceInfoService;
 import com.zs.project.utils.SqlUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -32,6 +36,8 @@ import java.util.stream.Collectors;
 public class InterfaceInfoServiceImpl extends ServiceImpl<InterfaceInfoMapper, InterfaceInfo>
         implements InterfaceInfoService {
 
+    @Autowired
+    private UserInterfaceInfoMapper userInterfaceInfoMapper;
 
     @Override
     public void validInterfaceInfo(InterfaceInfo interfaceinfo, boolean add) {
@@ -128,6 +134,31 @@ public class InterfaceInfoServiceImpl extends ServiceImpl<InterfaceInfoMapper, I
         }
 
         return interfaceinfoVOPage;
+    }
+
+    @Override
+    public boolean buyInterfaceCount(Long interfaceInfoId, Long userId) {
+
+        // 根据接口id和用户id查询是否已经存在
+        LambdaQueryWrapper<UserInterfaceInfo> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(UserInterfaceInfo::getInterfaceInfoId, interfaceInfoId);
+        queryWrapper.eq(UserInterfaceInfo::getUserId, userId);
+        UserInterfaceInfo userInterfaceInfo;
+        userInterfaceInfo = userInterfaceInfoMapper.selectOne(queryWrapper);
+        if (userInterfaceInfo != null) {
+            // 已经存在，更新
+            userInterfaceInfo.setLeftNum(userInterfaceInfo.getLeftNum() + 1000);
+            return userInterfaceInfoMapper.updateById(userInterfaceInfo) > 0;
+        }
+        // 不存在，新增
+        userInterfaceInfo = new UserInterfaceInfo();
+        userInterfaceInfo.setInterfaceInfoId(interfaceInfoId);
+        userInterfaceInfo.setUserId(userId);
+        userInterfaceInfo.setTotalNum(0);
+        userInterfaceInfo.setLeftNum(1000);
+
+        return userInterfaceInfoMapper.insert(userInterfaceInfo) > 0;
+
     }
 
 }

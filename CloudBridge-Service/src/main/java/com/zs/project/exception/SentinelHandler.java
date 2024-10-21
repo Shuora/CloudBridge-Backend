@@ -21,10 +21,13 @@ public class SentinelHandler {
 
     public static BaseResponse<Object> doActionBlockHandler(@RequestBody InterfaceInfoInvokeRequest interfaceInfoInvokeRequest, HttpServletRequest request, BlockException e) {
         log.error("sentinel配置自定义限流了:{}", e);
-        return ResultUtils.error(ErrorCode.FORBIDDEN_ERROR, "访问过快，请稍后再试！");
+        return ResultUtils.error(ErrorCode.FORBIDDEN_ERROR, "访问接口过快，请稍后再试！");
     }
 
-    public static BaseResponse<Object> doActionFallback(@RequestBody InterfaceInfoInvokeRequest interfaceInfoInvokeRequest, HttpServletRequest request, Throwable e) {
+    public static BaseResponse<Object> doActionFallback(@RequestBody InterfaceInfoInvokeRequest interfaceInfoInvokeRequest, HttpServletRequest request, Throwable e) throws Throwable {
+        if (e instanceof BusinessException) {
+            throw e;
+        }
         log.error("程序逻辑异常了:{}", e);
         return ResultUtils.error(ErrorCode.FORBIDDEN_ERROR, "服务器暂时不可用");
     }

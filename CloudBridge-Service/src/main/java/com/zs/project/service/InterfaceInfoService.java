@@ -54,4 +54,10 @@ public interface InterfaceInfoService extends IService<InterfaceInfo> {
 
 
     Page<InterfaceInfoVO> getInterfaceInfoVOPageAndUser(Page<InterfaceInfo> interfaceinfoPage, HttpServletRequest request);
+
+
+    /**
+     * 购买接口次数
+     */
+    boolean buyInterfaceCount(Long interfaceInfoId, Long userId);
 }

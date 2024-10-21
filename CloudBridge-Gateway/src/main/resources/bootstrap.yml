@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: CloudBridge-Gateway
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+      config:
+        server-addr: localhost:8848
+        namespace: 1f0ffb92-39a2-4efc-9c97-a31130a189d1
+        # 关键修改部分开始
+        extension-configs:
+          - dataId: API_Interface.json
+            group: DEFAULT_GROUP
+            refresh: true
+        # 关键修改部分结束

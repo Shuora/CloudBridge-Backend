@@ -17,12 +17,15 @@ import com.zs.project.exception.BusinessException;
 import com.zs.project.exception.SentinelHandler;
 import com.zs.project.exception.ThrowUtils;
 import com.zs.project.service.InterfaceInfoService;
+import com.zs.project.service.UserInterfaceInfoService;
 import com.zs.project.service.UserService;
+import com.zs.project.utils.NacosUtils;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -42,6 +45,8 @@ public class InterfaceInfoController {
     @Resource
     private UserService userService;
 
+    @Autowired
+    private UserInterfaceInfoService userInterfaceInfoService;
 
     private String GATEWAY_HOST = "http://localhost:8090";
 
@@ -59,6 +64,7 @@ public class InterfaceInfoController {
      * @return
      */
     @PostMapping("/add")
+    @Transactional
     public BaseResponse<Long> addInterfaceInfo(@RequestBody InterfaceInfoAddRequest interfaceInfoAddRequest, HttpServletRequest request) {
         if (interfaceInfoAddRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -71,6 +77,17 @@ public class InterfaceInfoController {
         boolean result = interfaceInfoService.save(interfaceInfo);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
         long newInterfaceInfoId = interfaceInfo.getId();
+
+        // 添加路由信息
+        String uri = interfaceInfo.getUrl();
+        String name = interfaceInfo.getName();
+        NacosUtils nacosUtils = new NacosUtils();
+        boolean publishResult = nacosUtils.appendConfig(uri, name);
+
+        if (!publishResult) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "发布接口失败");
+        }
+
         return ResultUtils.success(newInterfaceInfoId);
     }
 
@@ -96,6 +113,8 @@ public class InterfaceInfoController {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
         }
         boolean b = interfaceInfoService.removeById(id);
+
+
         return ResultUtils.success(b);
     }
 
@@ -269,6 +288,7 @@ public class InterfaceInfoController {
 
     @PostMapping("invoke")
     @SentinelResource(value = "invokeInterfaceInfo", blockHandler = "doActionBlockHandler", blockHandlerClass = SentinelHandler.class, fallback = "doActionFallback", fallbackClass = SentinelHandler.class)
+    @Transactional
     public BaseResponse<Object> invokeInterfaceInfo(@RequestBody InterfaceInfoInvokeRequest interfaceInfoInvokeRequest, HttpServletRequest request) {
         if (interfaceInfoInvokeRequest == null || interfaceInfoInvokeRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -285,6 +305,12 @@ public class InterfaceInfoController {
         if (oldInterfaceInfo.getStatus() != InterfaceInfoStatusEnum.ONLINE.getValue()) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "接口已关闭！");
         }
+
+        boolean flag = userInterfaceInfoService.getLeftNumberOfCalls(id, userService.getLoginUser(request).getId());
+        if (!flag) {
+            throw new BusinessException(ErrorCode.FORBIDDEN_ERROR, "调用次数不足！");
+        }
+
         User user = userService.getLoginUser(request);
         String accessKey = user.getAccessKey();
         String secretKey = user.getSecretKey();
@@ -296,5 +322,17 @@ public class InterfaceInfoController {
         return ResultUtils.success(result);
     }
 
+    @PostMapping("buy")
+    public BaseResponse<String> buy(@RequestParam("id") Long interfaceId, HttpServletRequest request) {
+        InterfaceInfo interfaceInfo = interfaceInfoService.getById(interfaceId);
+        ThrowUtils.throwIf(interfaceInfo == null, ErrorCode.NOT_FOUND_ERROR);
+        User loginUser = userService.getLoginUser(request);
+        ThrowUtils.throwIf(loginUser == null, ErrorCode.NO_AUTH_ERROR);
+        boolean result = interfaceInfoService.buyInterfaceCount(interfaceId, loginUser.getId());
+        if (!result) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "购买次数失败");
+        }
+        return ResultUtils.success("购买次数成功");
+    }
 
 }

@@ -1,15 +1,13 @@
 server:
   port: 8090
 spring:
-  application:
-    name: CloudBridge-Gateway
   cloud:
     gateway:
       routes:
-        - id: api_route
-          uri: http://localhost:8123
-          predicates:
-            - Path=/api/**
+#        - id: api_route
+#          uri: http://localhost:8123
+#          predicates:
+#            - Path=/api/**
 #        - id: path_route
 #          uri: http://localhost:8123
 #          predicates:
@@ -25,6 +23,8 @@ spring:
 #          uri: http://www.baidu.com
 #          predicates:
 #            - Path=/api/**
+
+
 dubbo:
   application:
     name: CloudBridge-Gateway

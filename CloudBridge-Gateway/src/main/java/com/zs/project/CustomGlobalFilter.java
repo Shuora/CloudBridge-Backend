@@ -99,50 +99,54 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
         if (invokeUser == null) {
             return handlerNoAuth(response);
         }
-        // 防止高并发攻击
-        if (Long.parseLong(nonce) > 1000000L) {
-            return handlerNoAuth(response);
-        }
-        // 检查请求时间是否过期
-        if (System.currentTimeMillis() - Long.parseLong(timestamp) > 1000 * 60 * 5) {
-            return handlerNoAuth(response);
-        }
-        // 验证签名是否匹配
-        String secretKey = invokeUser.getSecretKey();
-        String serverSign = SignUtils.getSign(body, secretKey);
-        if (sign == null || !sign.equals(serverSign)) {
-            return handlerNoAuth(response);
-        }
+        String userRole = invokeUser.getUserRole();
+        if (!"admin".equals(userRole)) { // 普通用户需要鉴权
+            // 防止高并发攻击
+            if (Long.parseLong(nonce) > 1000000L) {
+                return handlerNoAuth(response);
+            }
+            // 检查请求时间是否过期
+            if (System.currentTimeMillis() - Long.parseLong(timestamp) > 1000 * 60 * 5) {
+                return handlerNoAuth(response);
+            }
+            // 验证签名是否匹配
+            String secretKey = invokeUser.getSecretKey();
+            String serverSign = SignUtils.getSign(body, secretKey);
+            if (sign == null || !sign.equals(serverSign)) {
+                return handlerNoAuth(response);
+            }
 
-        // 检查请求的接口是否存在以及请求方法是否匹配
-        // 4. 请求的模拟接口是否存在？以及请求方法是否匹配？
-        InterfaceInfo interfaceInfo = null;
-        try {
-            interfaceInfo = innerInterfaceInfoService.getInterfaceInfo(path, method);
-        } catch (Exception e) {
-            log.error("interface is not exists", e);
-        }
-        if (interfaceInfo == null) {
-            return handlerNoAuth(response);
-        }
+            // 检查请求的接口是否存在以及请求方法是否匹配
+            // 4. 请求的模拟接口是否存在？以及请求方法是否匹配？
+            InterfaceInfo interfaceInfo = null;
+            try {
+                interfaceInfo = innerInterfaceInfoService.getInterfaceInfo(path, method);
+            } catch (Exception e) {
+                log.error("interface is not exists", e);
+            }
+            if (interfaceInfo == null) {
+                return handlerNoAuth(response);
+            }
 
-        // 路由转发，调用相应的模拟接口
-        // 5. 请求转发，调用模拟接口
+            // 路由转发，调用相应的模拟接口
+            // 5. 请求转发，调用模拟接口
 //        Mono<Void> filter = chain.filter(exchange);
 //        log.info("响应", response.getStatusCode());
-        // 6. 调用接口
-        // todo 是否有调用次数
-        return handleResponse(exchange, chain, interfaceInfo.getId(), invokeUser.getId());
+            // 调用接口
+            return handleResponse(exchange, chain, interfaceInfo.getId(), invokeUser.getId());
+        } else { // 管理员不用鉴权
+            return chain.filter(exchange);
+        }
     }
 
 
     /**
      * 处理响应
      *
-     * @param exchange 服务器web交换信息，包含请求和响应信息
-     * @param chain 网关过滤器链，用于继续处理过滤器链中的下一个过滤器
+     * @param exchange        服务器web交换信息，包含请求和响应信息
+     * @param chain           网关过滤器链，用于继续处理过滤器链中的下一个过滤器
      * @param interfaceInfoId 接口信息ID，用于标识调用的接口
-     * @param userId 用户ID，用于标识调用接口的用户
+     * @param userId          用户ID，用于标识调用接口的用户
      * @return Mono<Void> 表示异步处理完成后不返回任何结果
      */
     public Mono<Void> handleResponse(ServerWebExchange exchange, GatewayFilterChain chain, long interfaceInfoId, long userId) {
@@ -220,7 +224,6 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
     }
 
 
-
     @Override
     public int getOrder() {
         return -1;
@@ -230,6 +233,7 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
         response.setStatusCode(HttpStatus.FORBIDDEN);
         return response.setComplete();
     }
+
 
     private Mono<Void> handlerInvokeError(ServerHttpResponse response) {
         response.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR);

@@ -1,5 +1,6 @@
 package com.zs.project.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -10,8 +11,8 @@ import com.zs.project.domain.dto.userinterfaceinfo.UserInterfaceInfoQueryRequest
 import com.zs.project.domain.entity.UserInterfaceInfo;
 import com.zs.project.domain.vo.UserInterfaceInfoVO;
 import com.zs.project.exception.BusinessException;
-import com.zs.project.service.UserInterfaceInfoService;
 import com.zs.project.mapper.UserInterfaceInfoMapper;
+import com.zs.project.service.UserInterfaceInfoService;
 import com.zs.project.utils.SqlUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.ObjectUtils;
@@ -139,6 +140,23 @@ public class UserInterfaceInfoServiceImpl extends ServiceImpl<UserInterfaceInfoM
         updateWrapper.setSql("leftNum = leftNum-1, totalNum = totalNum + 1");
 
         return this.update(updateWrapper);
+    }
+
+    @Override
+    public boolean getLeftNumberOfCalls(Long interfaceInfoId, Long userId) {
+        if (interfaceInfoId == null || userId == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+
+        LambdaQueryWrapper<UserInterfaceInfo> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(UserInterfaceInfo::getInterfaceInfoId, interfaceInfoId);
+        queryWrapper.eq(UserInterfaceInfo::getUserId, userId);
+
+
+        if (this.getOne(queryWrapper) == null) {
+            return false;
+        }
+        return this.getOne(queryWrapper).getLeftNum() > 0;
     }
 
 }

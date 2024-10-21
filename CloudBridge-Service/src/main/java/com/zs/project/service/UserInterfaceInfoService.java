@@ -3,17 +3,10 @@ package com.zs.project.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.zs.project.domain.dto.user.UserQueryRequest;
 import com.zs.project.domain.dto.userinterfaceinfo.UserInterfaceInfoQueryRequest;
-import com.zs.project.domain.entity.User;
 import com.zs.project.domain.entity.UserInterfaceInfo;
-import com.zs.project.domain.vo.LoginUserVO;
 import com.zs.project.domain.vo.UserInterfaceInfoVO;
-import com.zs.project.domain.vo.UserVO;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.boot.autoconfigure.security.SecurityProperties;
-
-import java.util.List;
 
 /**
  * @author lenovo
@@ -39,7 +32,7 @@ public interface UserInterfaceInfoService extends IService<UserInterfaceInfo> {
     QueryWrapper<UserInterfaceInfo> getQueryWrapper(UserInterfaceInfoQueryRequest userInterfaceInfoQueryRequest);
 
     /**
-     * 获取帖子封装
+     * 获取封装
      *
      * @param userInterfaceInfo
      * @param request
@@ -48,7 +41,7 @@ public interface UserInterfaceInfoService extends IService<UserInterfaceInfo> {
     UserInterfaceInfoVO getUserInterfaceInfoVO(UserInterfaceInfo userInterfaceInfo, HttpServletRequest request);
 
     /**
-     * 分页获取帖子封装
+     * 分页获取封装
      *
      * @param userInterfaceInfoPage
      * @param request
@@ -65,4 +58,12 @@ public interface UserInterfaceInfoService extends IService<UserInterfaceInfo> {
      */
     boolean invokeCount(Long interfaceInfoId, Long userId);
 
+    /**
+     * 获取剩余调用次数
+     *
+     * @param interfaceInfoId
+     * @param userId
+     * @return
+     */
+    boolean getLeftNumberOfCalls(Long interfaceInfoId, Long userId);
 }

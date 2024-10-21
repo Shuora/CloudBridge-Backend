@@ -1,9 +1,4 @@
 spring:
-  application:
-    name: CloudBridge-Service
-  # 默认 dev 环境
-  profiles:
-    active: dev
   # 支持 swagger3
   mvc:
     pathmatch:
@@ -45,9 +40,6 @@ spring:
       timeout:
         connect: 360000  # 连接超时，单位为毫秒
         read: 360000    # 读取超时，单位为毫秒
-    nacos:
-      discovery:
-        server-addr: localhost:8848 #配置Nacos地址
     sentinel:
       eager: true # 是否饥饿加载。默认为 false 关闭
       filter:
