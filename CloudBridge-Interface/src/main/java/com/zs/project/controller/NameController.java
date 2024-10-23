@@ -1,7 +1,8 @@
 package com.zs.project.controller;
 
-import com.cb.project.domain.User;
+import com.cb.project.domain.Request;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -11,7 +12,8 @@ import org.springframework.web.bind.annotation.*;
  * @description 名字API
  */
 @RestController
-@RequestMapping("/name")
+@RequestMapping("/")
+@Slf4j
 public class NameController {
 
 
@@ -26,8 +28,8 @@ public class NameController {
         return "POST 你的名字是" + name;
     }
 
-    @PostMapping("/user")
-    public String getUsernameByPost(@RequestBody User user, HttpServletRequest request) {
+    @PostMapping("/getUsernameByPost")
+    public String getUsernameByPost(@RequestBody Request user, HttpServletRequest request) {
 //        String accessKey = request.getHeader("accessKey");
 //        String nonce = request.getHeader("nonce");
 //        String timestamp = request.getHeader("timestamp");
@@ -50,7 +52,7 @@ public class NameController {
 //        if (!sign.equals(SignUtils.getSign(body, "123456"))) {
 //            throw new RuntimeException("无权限");
 //        }
-
+        log.info("转发到了后端：" + user.getUserName());
         return "POST 你的名字是" + user.getUserName();
     }
 }

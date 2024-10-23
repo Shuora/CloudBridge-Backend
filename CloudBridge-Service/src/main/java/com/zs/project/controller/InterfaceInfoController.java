@@ -10,6 +10,7 @@ import com.zs.project.domain.dto.interfaceinfo.InterfaceInfoInvokeRequest;
 import com.zs.project.domain.dto.interfaceinfo.InterfaceInfoQueryRequest;
 import com.zs.project.domain.dto.interfaceinfo.InterfaceInfoUpdateRequest;
 import com.zs.project.domain.entity.InterfaceInfo;
+import com.zs.project.domain.entity.SdkInfo;
 import com.zs.project.domain.entity.User;
 import com.zs.project.domain.enums.InterfaceInfoStatusEnum;
 import com.zs.project.domain.vo.InterfaceInfoVO;
@@ -17,8 +18,10 @@ import com.zs.project.exception.BusinessException;
 import com.zs.project.exception.SentinelHandler;
 import com.zs.project.exception.ThrowUtils;
 import com.zs.project.service.InterfaceInfoService;
+import com.zs.project.service.SdkInfoService;
 import com.zs.project.service.UserInterfaceInfoService;
 import com.zs.project.service.UserService;
+import com.zs.project.utils.JarLoaderUtils;
 import com.zs.project.utils.NacosUtils;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
@@ -47,6 +50,9 @@ public class InterfaceInfoController {
 
     @Autowired
     private UserInterfaceInfoService userInterfaceInfoService;
+
+    @Autowired
+    private SdkInfoService sdkInfoService;
 
     private String GATEWAY_HOST = "http://localhost:8090";
 
@@ -164,7 +170,7 @@ public class InterfaceInfoController {
         }
 
 //        // 初始化一个用户对象用于后续的身份验证
-//        com.cb.project.domain.User user = new com.cb.project.domain.User();
+//        com.cb.project.domain.Request user = new com.cb.project.domain.Request();
 //        user.setUserName("test");
 //        // 通过外部服务验证用户身份，并获取用户名
 //        String username = APIClient.getUsernameByPost(user);
@@ -207,7 +213,7 @@ public class InterfaceInfoController {
         }
 
 //        // 初始化一个用户对象，用于后续调用验证接口
-//        com.cb.project.domain.User user = new com.cb.project.domain.User();
+//        com.cb.project.domain.Request user = new com.cb.project.domain.Request();
 //        user.setUserName("test");
 //        // 调用验证接口，获取用户名
 //        String username = APIClient.getUsernameByPost(user);
@@ -314,10 +320,22 @@ public class InterfaceInfoController {
         User user = userService.getLoginUser(request);
         String accessKey = user.getAccessKey();
         String secretKey = user.getSecretKey();
-        APIClient tempClient = new APIClient(GATEWAY_HOST, accessKey, secretKey);
-        Gson gson = new Gson();
-        com.cb.project.domain.User userRequest = gson.fromJson(userRequestParams, com.cb.project.domain.User.class);
-        String result = tempClient.getUsernameByPost(userRequest);
+
+        Long sdkId = oldInterfaceInfo.getSdkId();
+        ThrowUtils.throwIf(sdkId == null, ErrorCode.NOT_FOUND_ERROR);
+        SdkInfo newSDK = sdkInfoService.getById(sdkId);
+
+        String jarPath = newSDK.getPath();
+        String requestMethod = oldInterfaceInfo.getName();
+
+        JarLoaderUtils jarLoaderUtils = new JarLoaderUtils(secretKey, accessKey, GATEWAY_HOST);
+        String result = jarLoaderUtils.invokeJarMethod(jarPath, requestMethod, userRequestParams);
+
+
+//        APIClient tempClient = new APIClient(GATEWAY_HOST, accessKey, secretKey);
+//        Gson gson = new Gson();
+//        Request requestRequest = gson.fromJson(userRequestParams, Request.class);
+//        String result = tempClient.getUsernameByPost(requestRequest);
 
         return ResultUtils.success(result);
     }

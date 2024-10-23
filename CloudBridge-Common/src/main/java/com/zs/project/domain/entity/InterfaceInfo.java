@@ -76,7 +76,7 @@ public class InterfaceInfo implements Serializable {
      */
     private Integer isDelete;
     /**
-     *
+     * SDK ID
      */
     private Long sdkId;
 

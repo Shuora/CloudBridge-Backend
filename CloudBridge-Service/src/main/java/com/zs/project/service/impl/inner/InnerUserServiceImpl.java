@@ -9,7 +9,6 @@ import com.zs.project.service.InnerUserService;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.dubbo.config.annotation.DubboService;
-import org.springframework.beans.factory.annotation.Autowired;
 
 
 /**
@@ -26,7 +25,7 @@ public class InnerUserServiceImpl implements InnerUserService {
      * 根据访问密钥、符获取用户信息。
      *
      * @param accessKey 用户的访问密钥，用于身份验证。
-     * @return User 返回匹配的用户对象，如果找不到，则返回null。
+     * @return Request 返回匹配的用户对象，如果找不到，则返回null。
      * @throws BusinessException 如果访问密钥或密钥识别符为空，则抛出此异常。
      */
     @Override

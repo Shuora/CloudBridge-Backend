@@ -9,7 +9,8 @@ import com.zs.project.service.InnerInterfaceInfoService;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.dubbo.config.annotation.DubboService;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import java.net.MalformedURLException;
 
 
 /**
@@ -39,9 +40,17 @@ public class InnerInterfaceInfoServiceImpl implements InnerInterfaceInfoService 
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
 
+        java.net.URL urlObj = null;
+        try {
+            urlObj = new java.net.URL(path);
+        } catch (MalformedURLException e) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "路径格式错误");
+        }
+        String newPath = urlObj.getPath();  // 这会返回 "/api/getUserNameByPost"
+
         // 构造查询条件，查询与给定路径和方法匹配的接口信息
         QueryWrapper<InterfaceInfo> objectQueryWrapper = new QueryWrapper<>();
-        objectQueryWrapper.eq("url", path);
+        objectQueryWrapper.eq("url", newPath);
         objectQueryWrapper.eq("method", method);
 
         // 执行查询并返回结果

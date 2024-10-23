@@ -21,7 +21,6 @@ public class InterfaceInfoInvokeRequest implements Serializable {
      */
     private String userRequestParams;
 
-
     /**
      * 请求方式
      */

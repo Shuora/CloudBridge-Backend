@@ -4,7 +4,7 @@ import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONUtil;
-import com.cb.project.domain.User;
+import com.cb.project.domain.Request;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.nio.charset.StandardCharsets;
@@ -51,9 +51,9 @@ public class APIClient {
     }
 
 
-    public String getUsernameByPost(User user) {
-        String json = JSONUtil.toJsonStr(user);
-        HttpResponse response = HttpRequest.post(GATEWAY_HOST + "/api/name/user")
+    public String getUsernameByPost(Request request) {
+        String json = JSONUtil.toJsonStr(request);
+        HttpResponse response = HttpRequest.post(GATEWAY_HOST + "/api/getUsernameByPost")
                 .charset(StandardCharsets.UTF_8)
                 .addHeaders(getHeaderMap(json, accessKey, secretKey))
                 .body(json)
