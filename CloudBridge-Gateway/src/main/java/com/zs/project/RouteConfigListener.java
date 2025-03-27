@@ -8,6 +8,7 @@ import com.alibaba.nacos.api.exception.NacosException;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -33,7 +34,35 @@ public class RouteConfigListener {
     private String group;
 
     @Autowired
+    @Qualifier("routeUpdateExecutor")
+    private Executor executor; // 注入线程池
+
+    @Autowired
     private RouteOperator routeOperator;
+
+    @PostConstruct
+    public void init() throws NacosException {
+        Properties properties = new Properties();
+        properties.put(PropertyKeyConst.SERVER_ADDR, serverAddr);
+        properties.put(PropertyKeyConst.NAMESPACE, namespace);
+        ConfigService configService = NacosFactory.createConfigService(properties);
+        log.info("Nacos配置服务创建成功");
+        configService.addListener(dataId, group, new Listener() {
+            @Override
+            public void receiveConfigInfo(String configInfo) {
+                // 提交到独立线程池处理
+                executor.execute(() -> {
+                    log.info("异步处理路由更新...");
+                    routeOperator.refreshAll(configInfo);
+                });
+            }
+
+            @Override
+            public Executor getExecutor() {
+                return executor; // 指定监听器使用的线程池
+            }
+        });
+    }
 
     @PostConstruct
     public void dynamicRouteByNacosListener() throws NacosException {

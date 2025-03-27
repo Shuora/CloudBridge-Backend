@@ -21,7 +21,7 @@ import com.zs.project.service.InterfaceInfoService;
 import com.zs.project.service.SdkInfoService;
 import com.zs.project.service.UserInterfaceInfoService;
 import com.zs.project.service.UserService;
-import com.zs.project.utils.JarLoaderUtils;
+import com.zs.project.utils.JarLoaderUtil;
 import com.zs.project.utils.NacosUtils;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
@@ -328,7 +328,7 @@ public class InterfaceInfoController {
         String jarPath = newSDK.getPath();
         String requestMethod = oldInterfaceInfo.getName();
 
-        JarLoaderUtils jarLoaderUtils = new JarLoaderUtils(secretKey, accessKey, GATEWAY_HOST);
+        JarLoaderUtil jarLoaderUtils = new JarLoaderUtil(secretKey, accessKey, GATEWAY_HOST);
         String result = jarLoaderUtils.invokeJarMethod(jarPath, requestMethod, userRequestParams);
 
 
