@@ -5,6 +5,7 @@ import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.exception.NacosException;
+import com.alibaba.nacos.client.config.filter.impl.ConfigResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,10 +15,17 @@ import com.zs.project.common.ErrorCode;
 import com.zs.project.exception.BusinessException;
 import com.zs.project.exception.ThrowUtils;
 import jakarta.annotation.PostConstruct;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -38,6 +46,70 @@ public class NacosUtils {
     @Value("${spring.cloud.nacos.config.extension-configs[0].group}")
     private String group;
     private ConfigService configService;
+    private RedisTemplate redisTemplate;
+    private static final int MAX_RETRIES = 3;
+
+    // 更新配置并推送到 Redis Stream
+    public boolean updateConfigAndNotify(String uri, String name) {
+        int retryCount = 0;
+
+        while (retryCount < MAX_RETRIES) {
+            try {
+                // 获取当前版本号
+                String versionKey = "config_ver:" + dataId + ":" + group;
+                String configKey = "config:" + dataId + ":" + group;
+                int currentVersion = Integer.parseInt((String) redisTemplate.opsForValue().get(versionKey));
+
+                // 执行 Lua 脚本（CAS 更新配置并推送到 Stream）
+                DefaultRedisScript<List> redisScript = new DefaultRedisScript<>();
+                redisScript.setScriptText(loadLuaScript());
+                redisScript.setResultType(List.class);
+
+                // 执行 Lua 脚本，返回结果
+                List<Object> result = (List<Object>) redisTemplate.execute(redisScript, null,
+                        uri, name, currentVersion);
+
+                String status = (String) result.get(0);
+
+                if ("CONFLICT".equals(status)) {
+                    // 获取最新版本和配置，重新合并后再提交
+                    int latestVersion = (int) result.get(1);
+                    String latestConfig = (String) result.get(2);
+                    String mergedConfig = appendConfig(uri, name); // 合并配置
+                    // 递增重试计数
+                    retryCount++;
+                    if (retryCount >= MAX_RETRIES) {
+                        // 达到最大重试次数，抛出异常
+                        throw new RuntimeException("Configuration update failed due to version conflict after " + MAX_RETRIES + " retries.");
+                    }
+                    // 如果冲突，跳过本轮重试并继续尝试
+                    continue; // 继续重试
+                }
+                return true; // 成功更新，退出方法
+
+            } catch (Exception e) {
+                // 捕获异常并处理
+                throw new RuntimeException("Failed to update configuration for " + dataId + ":" + group, e);
+            }
+        }
+        return false; // 达到最大重试次数仍然失败
+    }
+
+    private String loadLuaScript() {
+        // 读取并返回 Lua 脚本内容
+        // 从文件读取
+        File file = new File("src/main/resources/updateConfig.lua");
+        if (file.exists()) {
+            try {
+                return new String(java.nio.file.Files.readAllBytes(file.toPath()));
+            } catch (java.io.IOException e) {
+                throw new RuntimeException("Failed to load Lua script", e);
+            }
+        }
+        // 如果文件不存在，可以选择抛出异常或返回默认脚本
+        throw new RuntimeException("Lua script file not found");
+    }
+
 
     @PostConstruct
     public void InitNacosUtils() {
@@ -100,7 +172,7 @@ public class NacosUtils {
      *
      * @return 是否追加成功
      */
-    public boolean appendConfig(String uri, String name) {
+    public String appendConfig(String uri, String name) {
         // 获取现有的配置
         String existingConfig = getConfig();
 
@@ -147,7 +219,7 @@ public class NacosUtils {
         }
 
         // 发布更新后的配置
-        return publishConfig(updatedJsonString);
+        return updatedJsonString;
     }
 
 

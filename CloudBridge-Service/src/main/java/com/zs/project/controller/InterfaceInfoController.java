@@ -88,7 +88,7 @@ public class InterfaceInfoController {
         String uri = interfaceInfo.getUrl();
         String name = interfaceInfo.getName();
         NacosUtils nacosUtils = new NacosUtils();
-        boolean publishResult = nacosUtils.appendConfig(uri, name);
+        boolean publishResult = nacosUtils.updateConfigAndNotify(uri, name);
 
         if (!publishResult) {
             throw new BusinessException(ErrorCode.OPERATION_ERROR, "发布接口失败");
